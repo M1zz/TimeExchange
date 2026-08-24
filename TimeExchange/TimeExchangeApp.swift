@@ -7,6 +7,6 @@ struct TimeExchangeApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: Exchange.self)
+        .modelContainer(for: [TimeCell.self, Recovery.self, Exchange.self])
     }
 }
