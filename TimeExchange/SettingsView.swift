@@ -13,6 +13,7 @@ struct SettingsView: View {
     @Query private var cells: [TimeCell]
     @State private var confirmReset = false
     @State private var confirmClearBoard = false
+    @State private var confirmSeed = false
 
     private var profile: RateProfile {
         RateProfile(monthlyNetPay: monthlyNetPay,
@@ -32,6 +33,12 @@ struct SettingsView: View {
                 assetSection
                 assetRateSection
                 guideSection
+                Section("데모") {
+                    Button("데모 데이터 채우기") { confirmSeed = true }
+                    Text("단가가 다른 노랑 세 개와, 회수된 파랑·회수 전 파랑이 들어 있는 두 주치 기록입니다. 이 장부가 무엇을 말하는지 보려는 용도이며, 기존 기록 위에 덧씌워집니다.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
                 Section {
                     Button("출금 기록만 삭제", role: .destructive) { confirmReset = true }
                     Button("색칠판·회수까지 전부 삭제", role: .destructive) { confirmClearBoard = true }
@@ -48,6 +55,11 @@ struct SettingsView: View {
                 Button("전부 삭제", role: .destructive) { deleteEverything() }
             } message: {
                 Text("되돌릴 수 없습니다.")
+            }
+            .confirmationDialog("데모 데이터를 채울까요?", isPresented: $confirmSeed, titleVisibility: .visible) {
+                Button("채우기") { SeedData.install(into: context) }
+            } message: {
+                Text("이번 주와 지난 주에 예시 기록이 들어갑니다. 같은 칸에 이미 칠한 것이 있으면 겹칩니다.")
             }
         }
     }

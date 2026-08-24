@@ -2,9 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var context
     @State private var board = BoardState()
-    @AppStorage("didSeedDemo") private var didSeedDemo = false
 
     var body: some View {
         TabView {
@@ -20,10 +18,5 @@ struct ContentView: View {
                 .tabItem { Label("환율", systemImage: "slider.horizontal.3") }
         }
         .environment(board)
-        .task {
-            guard !didSeedDemo else { return }
-            didSeedDemo = true
-            if let focus = SeedData.install(into: context) { board.monday = focus }
-        }
     }
 }

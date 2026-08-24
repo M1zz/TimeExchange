@@ -183,7 +183,7 @@
 | `ConceptView.swift` | 개념 페이지 |
 | `LedgerSheets.swift` | 색 고르기 + 색마다 다른 전표 시트 |
 | `WeeklyReadingView.swift` | 다섯 줄과 회수 기록 |
-| `SeedData.swift` | 첫 실행 데모 한 주 |
+| `SeedData.swift` | 데모 두 주. 환율 탭에서 부를 때만 들어온다 |
 
 ## 기술
 
