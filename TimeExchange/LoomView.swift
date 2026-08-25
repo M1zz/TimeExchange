@@ -63,6 +63,7 @@ struct LoomView: View {
     @Environment(BoardState.self) private var board
     @State private var tool: Tool = .ledger
     @State private var target: CellSpot?
+    @State private var interviewing = false
 
     /// 전표가 붙어 있어 칠하기가 건너뛴 칸들. 손을 떼면 한꺼번에 물어본다.
     @State private var skipped: [CellSpot] = []
@@ -100,6 +101,7 @@ struct LoomView: View {
                 ScrollView {
                     VStack(spacing: 14) {
                         header
+                        if isBlankWeek { invitation }
                         loomGrid
                         palette
                         legend
@@ -112,8 +114,18 @@ struct LoomView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Palette.bg, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { interviewing = true } label: {
+                        Label("한 주 묻기", systemImage: "questionmark.bubble")
+                    }
+                }
+            }
         }
         .tint(Palette.text)
+        .sheet(isPresented: $interviewing) {
+            WeekInterviewView(monday: board.monday, throughIndex: throughIndex)
+        }
         .sheet(item: $target) { spot in
             LedgerSheet(day: calendar.startOfDay(for: days[spot.dayIndex]),
                         slot: spot.slot,
@@ -151,6 +163,35 @@ struct LoomView: View {
                 .foregroundStyle(Palette.mute)
         }
         .padding(.top, 8)
+    }
+
+    /// 이 주에 칠한 칸이 하나도 없는가. 빈 격자를 마주한 사람에게 56번 탭하라고 할 수는 없다.
+    private var isBlankWeek: Bool {
+        guard throughIndex >= 0 else { return false }
+        let past = Set(days.prefix(throughIndex + 1).map { calendar.startOfDay(for: $0) })
+        return !allCells.contains { past.contains(calendar.startOfDay(for: $0.day)) }
+    }
+
+    private var invitation: some View {
+        Panel {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("이 주는 아직 비어 있습니다.")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(Palette.text)
+                Text("한 칸씩 채울 필요는 없습니다. 네 가지만 묻고, 기억나는 것만 칠하면 됩니다. 나머지는 안개로 남습니다.")
+                    .font(.body)
+                    .foregroundStyle(Palette.mute)
+                Button { interviewing = true } label: {
+                    Text("한 주 묻기")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(Palette.text, in: RoundedRectangle(cornerRadius: 12))
+                        .foregroundStyle(Palette.bg)
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 
     private func shiftWeek(_ delta: Int) {
@@ -372,8 +413,8 @@ struct LoomView: View {
     }
 }
 
-/// 물감을 들었을 때만 드래그를 가로챈다.
-private struct PaintDrag: ViewModifier {
+/// 물감을 들었을 때만 드래그를 가로챈다. 색칠판과 «한 주 묻기»가 같이 쓴다.
+struct PaintDrag: ViewModifier {
     let active: Bool
     let onMove: (CGPoint) -> Void
     let onEnd: () -> Void
